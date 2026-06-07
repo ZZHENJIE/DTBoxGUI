@@ -1,0 +1,21 @@
+{
+  "windows": {
+    "main_window": {
+      "pos_x": 100.0,
+      "pos_y": 100.0,
+      "width": 800.0,
+      "height": 600.0
+    },
+    "chart_windows": [
+      {
+        "symbol": "",
+        "window": {
+          "pos_x": 100.0,
+          "pos_y": 100.0,
+          "width": 800.0,
+          "height": 600.0
+        }
+      }
+    ]
+  }
+}
