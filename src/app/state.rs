@@ -27,7 +27,10 @@ impl State {
     }
     pub fn windows_close_request(id: iced::window::Id, window: &mut impl Window) -> Task<Message> {
         if window.close_request() {
-            window.close().chain(Task::done(Message::CloseWindow(id)))
+            window
+                .close()
+                .chain(window::close(id))
+                .chain(Task::done(Message::CloseWindow(id)))
         } else {
             Task::none()
         }
@@ -53,7 +56,6 @@ impl State {
                 })
             }
             Message::CloseRequestWindow(id) => {
-                println!("CloseRequestWindow");
                 if let Some(handle) = self.windows.get_mut(&id) {
                     match handle {
                         WindowHandle::MainWindow(window) => Self::windows_close_request(id, window),
@@ -68,6 +70,7 @@ impl State {
             Message::CloseWindow(id) => {
                 self.windows.remove(&id);
                 if self.windows.is_empty() {
+                    let _ = self.settings.save("./settings.json");
                     iced::exit()
                 } else {
                     Task::none()

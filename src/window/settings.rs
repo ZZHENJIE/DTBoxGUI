@@ -5,6 +5,12 @@ pub enum Message {
     Open,
 }
 
+impl IntoMessage for Message {
+    fn into_message(&self, id: iced::window::Id) -> crate::Message {
+        crate::Message::SettingsWindowMessage(id, self.clone())
+    }
+}
+
 pub struct SettingsWindow {
     pub id: iced::window::Id,
 }
@@ -15,19 +21,16 @@ impl SettingsWindow {
     }
 }
 
-impl IntoMessage for SettingsWindow {
+impl crate::Window for SettingsWindow {
     type Message = Message;
 
-    fn into_message(self, message: Self::Message) -> crate::Message {
-        crate::Message::SettingsWindowMessage(self.id.clone(), message)
-    }
-}
-
-impl crate::Window for SettingsWindow {
-    fn settings(settings: &crate::Settings) -> iced::window::Settings {
-        let mut window_settings = iced::window::Settings::default();
-        window_settings.exit_on_close_request = true;
-        window_settings
+    fn settings(_: &crate::Settings) -> iced::window::Settings {
+        iced::window::Settings {
+            size: iced::Size::new(800.0, 600.0),
+            position: iced::window::Position::Centered,
+            exit_on_close_request: false,
+            ..Default::default()
+        }
     }
     fn update(
         &mut self,
@@ -46,7 +49,6 @@ impl crate::Window for SettingsWindow {
         true
     }
     fn close(&mut self) -> iced::Task<crate::Message> {
-        println!("Close");
         iced::Task::none()
     }
     fn title(&self) -> String {

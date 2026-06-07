@@ -13,10 +13,10 @@ pub struct Windows {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Window {
-    pub pos_x: f64,
-    pub pos_y: f64,
-    pub width: f64,
-    pub height: f64,
+    pub pos_x: f32,
+    pub pos_y: f32,
+    pub width: f32,
+    pub height: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,5 +45,10 @@ impl Settings {
         let bytes = std::fs::read(path)?;
         let settings: Self = serde_json::from_slice(&bytes)?;
         Ok(settings)
+    }
+    pub fn save(&self, path: &str) -> anyhow::Result<()> {
+        let bytes = serde_json::to_vec(&self)?;
+        std::fs::write(path, bytes)?;
+        Ok(())
     }
 }

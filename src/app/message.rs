@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 #[derive(Clone, Debug)]
 pub enum Message {
     OpenMainWindow(iced::window::Id),
@@ -6,4 +8,8 @@ pub enum Message {
     CloseWindow(iced::window::Id),
     MainWindowMessage(iced::window::Id, crate::MainWindowMessage),
     SettingsWindowMessage(iced::window::Id, crate::SettingsWindowMessage),
+}
+
+pub trait IntoMessage: Clone + Debug {
+    fn into_message(&self, id: iced::window::Id) -> crate::Message;
 }

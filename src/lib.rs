@@ -10,8 +10,10 @@ pub mod window {
     pub mod settings;
 }
 
+pub mod widget {}
+
 pub use {
-    app::message::Message, app::settings::Settings, app::state::State, app::window::IntoMessage,
+    app::message::IntoMessage, app::message::Message, app::settings::Settings, app::state::State,
     app::window::Window,
 };
 pub use {

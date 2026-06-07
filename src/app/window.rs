@@ -1,18 +1,15 @@
-use std::fmt::Debug;
-
 use iced::{Element, Task};
+
+use crate::IntoMessage;
 
 pub enum WindowHandle {
     MainWindow(crate::MainWindow),
     SettingsWindow(crate::SettingsWindow),
 }
 
-pub trait IntoMessage {
-    type Message: Clone + Debug;
-    fn into_message(self, message: Self::Message) -> crate::Message;
-}
+pub trait Window {
+    type Message: IntoMessage;
 
-pub trait Window: IntoMessage {
     fn close_request(&self) -> bool;
     fn close(&mut self) -> Task<crate::Message>;
     fn update(
