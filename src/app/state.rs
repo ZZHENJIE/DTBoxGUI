@@ -2,11 +2,11 @@ use std::collections::BTreeMap;
 
 use iced::{Task, window};
 
-use crate::{MainWindow, Message, SettingsWindow, Window, WindowConfig, app::window::WindowHandle};
+use crate::{Config, MainWindow, Message, SettingsWindow, Window, app::window::WindowHandle};
 
 pub struct State {
     project_dir: directories::ProjectDirs,
-    window_config: WindowConfig,
+    config: Config,
     windows: BTreeMap<window::Id, WindowHandle>,
 }
 
@@ -14,14 +14,14 @@ impl State {
     pub fn new() -> (Self, Task<Message>) {
         let project_dir = crate::utils::dir::project_dir()
             .unwrap_or_else(|err| panic!("Project Dir Error: {}", err.to_string()));
-        let window_config = WindowConfig::load(&project_dir).unwrap_or_default();
-        let (_, open) = window::open(MainWindow::settings(&window_config));
+        let config = Config::load(&project_dir).unwrap_or_default();
+        let (_, open) = window::open(MainWindow::settings(&config.window));
 
         (
             Self {
                 project_dir,
                 windows: BTreeMap::new(),
-                window_config,
+                config,
             },
             open.map(Message::OpenMainWindow),
         )
@@ -48,7 +48,7 @@ impl State {
                 ))
             }
             Message::OpenSettingsWindow => {
-                let (id, open) = window::open(SettingsWindow::settings(&self.window_config));
+                let (id, open) = window::open(SettingsWindow::settings(&self.config.window));
                 let _ = self
                     .windows
                     .insert(id, WindowHandle::SettingsWindow(SettingsWindow::new(id)));
@@ -71,7 +71,7 @@ impl State {
             Message::CloseWindow(id) => {
                 self.windows.remove(&id);
                 if self.windows.is_empty() {
-                    let _ = self.window_config.save(&self.project_dir);
+                    let _ = self.config.save(&self.project_dir);
                     iced::exit()
                 } else {
                     Task::none()
@@ -81,7 +81,7 @@ impl State {
                 if let Some(window) = self.windows.get_mut(&id) {
                     match window {
                         WindowHandle::MainWindow(window) => {
-                            window.update(message, &mut self.window_config)
+                            window.update(message, &mut self.config)
                         }
                         _ => Task::none(),
                     }
@@ -93,7 +93,7 @@ impl State {
                 if let Some(window) = self.windows.get_mut(&id) {
                     match window {
                         WindowHandle::SettingsWindow(window) => {
-                            window.update(message, &mut self.window_config)
+                            window.update(message, &mut self.config)
                         }
                         _ => Task::none(),
                     }

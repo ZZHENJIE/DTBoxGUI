@@ -31,20 +31,15 @@ impl MainWindow {
 
 impl crate::Window for MainWindow {
     type Message = Message;
-    fn settings(window_config: &crate::WindowConfig) -> iced::window::Settings {
-        let size = iced::Size::new(
-            window_config.main_window.width,
-            window_config.main_window.height,
-        );
+    fn settings(config: &crate::app::config::WindowConfig) -> iced::window::Settings {
+        let size = iced::Size::new(config.main_window.width, config.main_window.height);
         let position: iced::window::Position = {
-            if window_config.main_window.pos_x.is_none()
-                || window_config.main_window.pos_y.is_none()
-            {
+            if config.main_window.pos_x.is_none() || config.main_window.pos_y.is_none() {
                 iced::window::Position::Centered
             } else {
                 iced::window::Position::Specific(iced::Point::new(
-                    window_config.main_window.pos_x.unwrap_or_default(),
-                    window_config.main_window.pos_y.unwrap_or_default(),
+                    config.main_window.pos_x.unwrap_or_default(),
+                    config.main_window.pos_y.unwrap_or_default(),
                 ))
             }
         };
@@ -58,7 +53,7 @@ impl crate::Window for MainWindow {
     fn update(
         &mut self,
         message: Self::Message,
-        window_config: &mut crate::WindowConfig,
+        config: &mut crate::Config,
     ) -> iced::Task<crate::Message> {
         match message {
             Message::Add => {
@@ -71,14 +66,14 @@ impl crate::Window for MainWindow {
             }
             Message::OpenSettings => iced::Task::done(crate::Message::OpenSettingsWindow),
             Message::WindowSize(size) => {
-                window_config.main_window.width = size.width;
-                window_config.main_window.height = size.height;
+                config.window.main_window.width = size.width;
+                config.window.main_window.height = size.height;
                 iced::Task::none()
             }
             Message::WindowPos(pos) => {
                 if let Some(pos) = pos {
-                    window_config.main_window.pos_x = Some(pos.x);
-                    window_config.main_window.pos_y = Some(pos.y);
+                    config.window.main_window.pos_x = Some(pos.x);
+                    config.window.main_window.pos_y = Some(pos.y);
                 }
                 iced::Task::none()
             }
