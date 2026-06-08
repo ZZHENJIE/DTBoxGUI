@@ -24,7 +24,7 @@ impl SettingsWindow {
 impl crate::Window for SettingsWindow {
     type Message = Message;
 
-    fn settings(_: &crate::Settings) -> iced::window::Settings {
+    fn settings(_: &crate::WindowConfig) -> iced::window::Settings {
         iced::window::Settings {
             size: iced::Size::new(800.0, 600.0),
             position: iced::window::Position::Centered,
@@ -35,7 +35,7 @@ impl crate::Window for SettingsWindow {
     fn update(
         &mut self,
         message: Self::Message,
-        settings: &mut crate::Settings,
+        _: &mut crate::WindowConfig,
     ) -> iced::Task<crate::Message> {
         match message {
             Message::Open => println!("Open"),
