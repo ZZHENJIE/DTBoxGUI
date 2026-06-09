@@ -1,4 +1,4 @@
-use dtboxgui::State;
+use dtboxgui::Application;
 
 fn app_settings() -> iced::Settings {
     iced::Settings {
@@ -8,10 +8,10 @@ fn app_settings() -> iced::Settings {
 }
 
 fn main() -> iced::Result {
-    iced::daemon(State::new, State::update, State::view)
-        .title(State::title)
-        .theme(State::theme)
-        .subscription(State::subscription)
+    iced::daemon(Application::new, Application::update, Application::view)
+        .title(Application::title)
+        .theme(Application::theme)
+        .subscription(Application::subscription)
         .settings(app_settings())
         .run()
 }

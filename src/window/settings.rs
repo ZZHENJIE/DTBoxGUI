@@ -32,14 +32,7 @@ impl crate::Window for SettingsWindow {
             ..Default::default()
         }
     }
-    fn update(
-        &mut self,
-        message: Self::Message,
-        _: &mut crate::Config,
-    ) -> iced::Task<crate::Message> {
-        match message {
-            Message::Open => println!("Open"),
-        }
+    fn update(&mut self, _: Self::Message, _: &mut crate::State) -> iced::Task<crate::Message> {
         iced::Task::none()
     }
     fn view(&self) -> iced::Element<'_, Self::Message> {

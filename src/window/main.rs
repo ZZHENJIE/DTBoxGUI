@@ -1,13 +1,11 @@
 use iced::window;
 
-use crate::IntoMessage;
+use crate::{IntoMessage, view::StartPage};
 
 #[derive(Clone, Debug)]
 pub enum Message {
     Open,
-    Add,
-    Subtract,
-    OpenSettings,
+    StartPage(crate::view::start_page::Message),
     WindowPos(Option<iced::Point>),
     WindowSize(iced::Size),
 }
@@ -20,12 +18,15 @@ impl IntoMessage for Message {
 
 pub struct MainWindow {
     pub id: iced::window::Id,
-    pub count: i32,
+    pub start_page: StartPage,
 }
 
 impl MainWindow {
     pub fn new(id: iced::window::Id) -> Self {
-        Self { id, count: 0 }
+        Self {
+            id,
+            start_page: StartPage::new(),
+        }
     }
 }
 
@@ -53,42 +54,40 @@ impl crate::Window for MainWindow {
     fn update(
         &mut self,
         message: Self::Message,
-        config: &mut crate::Config,
+        state: &mut crate::State,
     ) -> iced::Task<crate::Message> {
+        let id = self.id.clone();
         match message {
-            Message::Add => {
-                self.count += 1;
-                iced::Task::none()
-            }
-            Message::Subtract => {
-                self.count -= 1;
-                iced::Task::none()
-            }
-            Message::OpenSettings => iced::Task::done(crate::Message::OpenSettingsWindow),
+            Message::Open => self
+                .start_page
+                .check_login_state()
+                .map(move |message| Message::StartPage(message).into_message(id)),
+            Message::StartPage(message) => self
+                .start_page
+                .update(message, state)
+                .map(move |message| Message::StartPage(message).into_message(id)),
             Message::WindowSize(size) => {
-                config.window.main_window.width = size.width;
-                config.window.main_window.height = size.height;
+                state.config.window.main_window.width = size.width;
+                state.config.window.main_window.height = size.height;
                 iced::Task::none()
             }
             Message::WindowPos(pos) => {
                 if let Some(pos) = pos {
-                    config.window.main_window.pos_x = Some(pos.x);
-                    config.window.main_window.pos_y = Some(pos.y);
+                    state.config.window.main_window.pos_x = Some(pos.x);
+                    state.config.window.main_window.pos_y = Some(pos.y);
                 }
                 iced::Task::none()
             }
-
-            _ => iced::Task::none(),
         }
     }
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        iced::widget::column![
-            iced::widget::button("Add").on_press(Message::Add),
-            iced::widget::button("Subtract").on_press(Message::Subtract),
-            iced::widget::button("Settings").on_press(Message::OpenSettings),
-            iced::widget::text(self.count.to_string()),
-        ]
-        .into()
+        if self.start_page.user_login_state {
+            iced::widget::column![].into()
+        } else {
+            self.start_page
+                .view()
+                .map(|message| Message::StartPage(message))
+        }
     }
     fn close_request(&self) -> bool {
         true
