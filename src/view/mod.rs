@@ -1,3 +1,3 @@
-pub mod start_page;
+pub mod start;
 
-pub use start_page::StartPage;
+pub use start::StartPage;

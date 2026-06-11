@@ -5,7 +5,7 @@ use crate::view::StartPage;
 #[derive(Clone, Debug)]
 pub enum Message {
     Open,
-    StartPage(crate::view::start_page::Message),
+    StartPage(crate::view::start::Message),
     WindowPos(Option<iced::Point>),
     WindowSize(iced::Size),
 }
@@ -28,14 +28,11 @@ impl crate::Widget for MainWindow {
     type Message = Message;
     fn update(&mut self, message: Self::Message, state: &mut crate::State) -> iced::Task<Message> {
         match message {
-            Message::Open => self
-                .start_page
-                .check_login_state()
-                .map(move |message| Message::StartPage(message)),
+            Message::Open => self.start_page.check_login_state().map(Message::StartPage),
             Message::StartPage(message) => self
                 .start_page
                 .update(message, state)
-                .map(move |message| Message::StartPage(message)),
+                .map(Message::StartPage),
             Message::WindowSize(size) => {
                 state.config.window.main_window.width = size.width;
                 state.config.window.main_window.height = size.height;
@@ -54,9 +51,7 @@ impl crate::Widget for MainWindow {
         if self.start_page.user_login_state {
             iced::widget::column![].into()
         } else {
-            self.start_page
-                .view()
-                .map(|message| Message::StartPage(message))
+            self.start_page.view().map(Message::StartPage)
         }
     }
 }
