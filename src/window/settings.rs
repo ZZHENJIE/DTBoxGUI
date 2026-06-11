@@ -1,14 +1,6 @@
-use crate::IntoMessage;
-
 #[derive(Clone, Debug)]
 pub enum Message {
     Open,
-}
-
-impl IntoMessage for Message {
-    fn into_message(&self, id: iced::window::Id) -> crate::Message {
-        crate::Message::SettingsWindowMessage(id, self.clone())
-    }
 }
 
 pub struct SettingsWindow {
@@ -21,10 +13,19 @@ impl SettingsWindow {
     }
 }
 
-impl crate::Window for SettingsWindow {
+impl crate::Widget for SettingsWindow {
     type Message = Message;
 
-    fn settings(_: &crate::app::config::WindowConfig) -> iced::window::Settings {
+    fn update(&mut self, _: Self::Message, _: &mut crate::State) -> iced::Task<Message> {
+        iced::Task::none()
+    }
+    fn view(&self) -> iced::Element<'_, Self::Message> {
+        iced::widget::column![].into()
+    }
+}
+
+impl crate::Window for SettingsWindow {
+    fn settings(_: &crate::domain::config::WindowConfig) -> iced::window::Settings {
         iced::window::Settings {
             size: iced::Size::new(800.0, 600.0),
             position: iced::window::Position::Centered,
@@ -32,16 +33,11 @@ impl crate::Window for SettingsWindow {
             ..Default::default()
         }
     }
-    fn update(&mut self, _: Self::Message, _: &mut crate::State) -> iced::Task<crate::Message> {
-        iced::Task::none()
-    }
-    fn view(&self) -> iced::Element<'_, Self::Message> {
-        iced::widget::column![].into()
-    }
+
     fn close_request(&self) -> bool {
         true
     }
-    fn close(&mut self) -> iced::Task<crate::Message> {
+    fn close(&mut self) -> iced::Task<Message> {
         iced::Task::none()
     }
     fn title(&self) -> String {

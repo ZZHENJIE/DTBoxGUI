@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub window: WindowConfig,
     pub server: Option<crate::ServerConfig>,
+    pub logging: LoggingConfig,
 }
 
 impl Default for Config {
@@ -20,6 +21,7 @@ impl Default for Config {
         Self {
             window,
             server: None,
+            logging: LoggingConfig::default(),
         }
     }
 }
@@ -58,4 +60,21 @@ pub struct WindowItem {
 pub struct ChartWindow {
     pub symbol: String,
     pub window: WindowItem,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoggingConfig {
+    pub level: String,
+    pub iced_wgpu_level: String,
+    pub iced_winit_level: String,
+}
+
+impl Default for LoggingConfig {
+    fn default() -> Self {
+        Self {
+            level: "info".to_string(),
+            iced_wgpu_level: "error".to_string(),
+            iced_winit_level: "error".to_string(),
+        }
+    }
 }

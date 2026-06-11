@@ -13,6 +13,9 @@ iced = { version = "0.14.0", features = ["tokio", "svg"] }
 iced_aw = "0.14.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
-core_domain = { git = "https://github.com/ZZHENJIE/DTBoxServer" }
 keyring = "3.6.3"
 reqwest = { version = "0.13.4", features = ["json"] }
+tracing = "0.1.44"
+tracing-appender = "0.2.5"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+core_domain = { git = "https://github.com/ZZHENJIE/DTBoxServer" }

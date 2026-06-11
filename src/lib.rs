@@ -1,11 +1,22 @@
 pub mod app {
     pub mod application;
-    pub mod config;
+    pub mod macros;
     pub mod message;
-    pub mod server;
     pub mod state;
-    pub mod token_store;
+    pub mod widget;
     pub mod window;
+}
+
+pub mod domain {
+    pub mod api;
+    pub mod config;
+    pub mod server;
+}
+
+pub mod infra {
+    pub mod dir;
+    pub mod logging;
+    pub mod token_store;
 }
 
 pub mod window {
@@ -13,27 +24,16 @@ pub mod window {
     pub mod settings;
 }
 
-pub mod utils {
-    pub mod dir;
-}
-
 pub mod view;
 
 pub mod widget;
 
 pub use {
-    app::application::Application, app::config::Config, app::message::IntoMessage,
-    app::message::Message, app::server::ServerConfig, app::state::State,
-    app::token_store::TokenStore, app::window::Window,
+    app::application::Application, app::message::Message, app::state::State, app::widget::Widget,
+    app::window::Window, domain::api::APIResponse, domain::config::Config,
+    domain::server::ServerConfig, infra::token_store::TokenStore,
 };
 pub use {
     window::main::MainWindow, window::main::Message as MainWindowMessage,
     window::settings::Message as SettingsWindowMessage, window::settings::SettingsWindow,
 };
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct APIResponse<T: serde::Serialize> {
-    pub code: i32,
-    pub data: Option<T>,
-    pub message: String,
-}

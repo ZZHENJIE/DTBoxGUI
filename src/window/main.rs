@@ -1,6 +1,6 @@
 use iced::window;
 
-use crate::{IntoMessage, view::StartPage};
+use crate::view::StartPage;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -8,12 +8,6 @@ pub enum Message {
     StartPage(crate::view::start_page::Message),
     WindowPos(Option<iced::Point>),
     WindowSize(iced::Size),
-}
-
-impl IntoMessage for Message {
-    fn into_message(&self, id: iced::window::Id) -> crate::Message {
-        crate::Message::MainWindowMessage(id, self.clone())
-    }
 }
 
 pub struct MainWindow {
@@ -30,42 +24,18 @@ impl MainWindow {
     }
 }
 
-impl crate::Window for MainWindow {
+impl crate::Widget for MainWindow {
     type Message = Message;
-    fn settings(config: &crate::app::config::WindowConfig) -> iced::window::Settings {
-        let size = iced::Size::new(config.main_window.width, config.main_window.height);
-        let position: iced::window::Position = {
-            if config.main_window.pos_x.is_none() || config.main_window.pos_y.is_none() {
-                iced::window::Position::Centered
-            } else {
-                iced::window::Position::Specific(iced::Point::new(
-                    config.main_window.pos_x.unwrap_or_default(),
-                    config.main_window.pos_y.unwrap_or_default(),
-                ))
-            }
-        };
-        iced::window::Settings {
-            size,
-            position,
-            exit_on_close_request: false,
-            ..Default::default()
-        }
-    }
-    fn update(
-        &mut self,
-        message: Self::Message,
-        state: &mut crate::State,
-    ) -> iced::Task<crate::Message> {
-        let id = self.id.clone();
+    fn update(&mut self, message: Self::Message, state: &mut crate::State) -> iced::Task<Message> {
         match message {
             Message::Open => self
                 .start_page
                 .check_login_state()
-                .map(move |message| Message::StartPage(message).into_message(id)),
+                .map(move |message| Message::StartPage(message)),
             Message::StartPage(message) => self
                 .start_page
                 .update(message, state)
-                .map(move |message| Message::StartPage(message).into_message(id)),
+                .map(move |message| Message::StartPage(message)),
             Message::WindowSize(size) => {
                 state.config.window.main_window.width = size.width;
                 state.config.window.main_window.height = size.height;
@@ -89,15 +59,36 @@ impl crate::Window for MainWindow {
                 .map(|message| Message::StartPage(message))
         }
     }
+}
+
+impl crate::Window for MainWindow {
+    fn settings(config: &crate::domain::config::WindowConfig) -> iced::window::Settings {
+        let size = iced::Size::new(config.main_window.width, config.main_window.height);
+        let position: iced::window::Position = {
+            if config.main_window.pos_x.is_none() || config.main_window.pos_y.is_none() {
+                iced::window::Position::Centered
+            } else {
+                iced::window::Position::Specific(iced::Point::new(
+                    config.main_window.pos_x.unwrap_or_default(),
+                    config.main_window.pos_y.unwrap_or_default(),
+                ))
+            }
+        };
+        iced::window::Settings {
+            size,
+            position,
+            exit_on_close_request: false,
+            ..Default::default()
+        }
+    }
     fn close_request(&self) -> bool {
         true
     }
-    fn close(&mut self) -> iced::Task<crate::Message> {
+    fn close(&mut self) -> iced::Task<Message> {
         let window_id = self.id.clone();
         window::size(window_id.clone())
             .map(Message::WindowSize)
             .chain(window::position(window_id.clone()).map(Message::WindowPos))
-            .map(move |message| crate::Message::MainWindowMessage(window_id, message))
     }
     fn title(&self) -> String {
         "DTBox".to_string()

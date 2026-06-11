@@ -1,4 +1,4 @@
-use iced::{Element, Task};
+use iced::Task;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -12,6 +12,7 @@ pub enum Message {
     ServerCheck,
     ServerCheckFailed,
     ServerCheckDone(crate::APIResponse<core_domain::result::HealthResult>),
+    OpenSettingsWindow,
 }
 
 pub struct StartPage {
@@ -23,21 +24,14 @@ pub struct StartPage {
     pub server_check_result: String,
 }
 
-impl StartPage {
-    pub fn new() -> Self {
-        Self {
-            user_login_state: false,
-            user_name: String::new(),
-            password: String::new(),
-            is_login_page: true,
-            server_config: crate::ServerConfig::default(),
-            server_check_result: String::new(),
-        }
-    }
-    pub fn check_login_state(&self) -> Task<Message> {
-        iced::Task::none()
-    }
-    pub fn update(&mut self, message: Message, state: &mut crate::State) -> Task<Message> {
+impl crate::Widget for StartPage {
+    type Message = Message;
+
+    fn update(
+        &mut self,
+        message: Self::Message,
+        state: &mut crate::State,
+    ) -> iced::Task<Self::Message> {
         match message {
             Message::PasswordChanged(value) => {
                 self.password = value;
@@ -76,25 +70,13 @@ impl StartPage {
                 self.server_check_result = "Check failed".to_string();
                 iced::Task::none()
             }
-        }
-    }
-    pub async fn server_check(server_config: crate::ServerConfig) -> Message {
-        match server_config.health().await {
-            Ok(result) => Message::ServerCheckDone(result),
-            Err(e) => {
-                println!("server check error:{}", e);
-                Message::ServerCheckFailed
+            Message::OpenSettingsWindow => {
+                state.emit(crate::Message::OpenSettingsWindow);
+                iced::Task::none()
             }
         }
     }
-    pub fn is_login_page_str(&self) -> &str {
-        if self.is_login_page {
-            "Create"
-        } else {
-            "Login"
-        }
-    }
-    pub fn view(&self) -> Element<'_, Message> {
+    fn view(&self) -> iced::Element<'_, Self::Message> {
         let user_name = iced::widget::row![
             iced::widget::text!("UserName"),
             iced::widget::text_input("Please enter your username", self.user_name.as_str())
@@ -141,8 +123,41 @@ impl StartPage {
             server_host,
             server_port,
             server_ssl,
-            server_check
+            server_check,
+            iced::widget::button("Open Settings Window").on_press(Message::OpenSettingsWindow)
         ]
         .into()
+    }
+}
+
+impl StartPage {
+    pub fn new() -> Self {
+        Self {
+            user_login_state: false,
+            user_name: String::new(),
+            password: String::new(),
+            is_login_page: true,
+            server_config: crate::ServerConfig::default(),
+            server_check_result: String::new(),
+        }
+    }
+    pub fn check_login_state(&self) -> Task<Message> {
+        iced::Task::none()
+    }
+    pub async fn server_check(server_config: crate::ServerConfig) -> Message {
+        match server_config.health().await {
+            Ok(result) => Message::ServerCheckDone(result),
+            Err(e) => {
+                tracing::error!("server check error:{}", e);
+                Message::ServerCheckFailed
+            }
+        }
+    }
+    pub fn is_login_page_str(&self) -> &str {
+        if self.is_login_page {
+            "Create"
+        } else {
+            "Login"
+        }
     }
 }

@@ -9,7 +9,3 @@ pub enum Message {
     MainWindowMessage(iced::window::Id, crate::MainWindowMessage),
     SettingsWindowMessage(iced::window::Id, crate::SettingsWindowMessage),
 }
-
-pub trait IntoMessage: Clone + Debug {
-    fn into_message(&self, id: iced::window::Id) -> crate::Message;
-}

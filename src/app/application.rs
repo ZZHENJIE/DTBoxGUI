@@ -1,4 +1,4 @@
-use crate::{MainWindow, Message, SettingsWindow, Window, app::window::WindowHandle};
+use crate::{MainWindow, Message, SettingsWindow, Widget, Window, app::window::WindowHandle};
 use iced::{Task, window};
 use std::collections::BTreeMap;
 
@@ -9,8 +9,19 @@ pub struct Application {
 
 impl Application {
     pub fn new() -> (Self, Task<Message>) {
-        let state = crate::State::new()
-            .unwrap_or_else(|err| panic!("create state err:{}", err.to_string()));
+        let project_dir = crate::infra::dir::project_dir()
+            .unwrap_or_else(|err| panic!("create project dir err:{}", err));
+        let config = crate::Config::load(&project_dir).unwrap_or_default();
+
+        crate::infra::logging::setup(
+            crate::infra::dir::logging_dir(&project_dir)
+                .unwrap_or_else(|err| panic!("create log dir err:{}", err)),
+            &config.logging,
+        );
+        tracing::info!("logging initialized, starting application");
+
+        let state = crate::State::new(project_dir, config)
+            .unwrap_or_else(|err| panic!("create state err:{}", err));
         let (_, open) = window::open(MainWindow::settings(&state.config.window));
 
         (
@@ -21,18 +32,8 @@ impl Application {
             open.map(Message::OpenMainWindow),
         )
     }
-    pub fn windows_close_request(id: iced::window::Id, window: &mut impl Window) -> Task<Message> {
-        if window.close_request() {
-            window
-                .close()
-                .chain(window::close(id))
-                .chain(Task::done(Message::CloseWindow(id)))
-        } else {
-            Task::none()
-        }
-    }
     pub fn update(&mut self, message: Message) -> Task<Message> {
-        match message {
+        let task = match message {
             Message::OpenMainWindow(id) => {
                 let _ = self
                     .windows
@@ -51,18 +52,7 @@ impl Application {
                     Message::SettingsWindowMessage(id, crate::SettingsWindowMessage::Open)
                 })
             }
-            Message::CloseRequestWindow(id) => {
-                if let Some(handle) = self.windows.get_mut(&id) {
-                    match handle {
-                        WindowHandle::MainWindow(window) => Self::windows_close_request(id, window),
-                        WindowHandle::SettingsWindow(window) => {
-                            Self::windows_close_request(id, window)
-                        }
-                    }
-                } else {
-                    Task::none()
-                }
-            }
+            Message::CloseRequestWindow(id) => self.handle_close_request_window(id),
             Message::CloseWindow(id) => {
                 self.windows.remove(&id);
                 if self.windows.is_empty() {
@@ -72,65 +62,43 @@ impl Application {
                     Task::none()
                 }
             }
-            Message::MainWindowMessage(id, message) => {
-                if let Some(window) = self.windows.get_mut(&id) {
-                    match window {
-                        WindowHandle::MainWindow(window) => window.update(message, &mut self.state),
-                        _ => Task::none(),
-                    }
-                } else {
-                    Task::none()
-                }
-            }
+            Message::MainWindowMessage(id, message) => self.handle_main_window_message(id, message),
             Message::SettingsWindowMessage(id, message) => {
-                if let Some(window) = self.windows.get_mut(&id) {
-                    match window {
-                        WindowHandle::SettingsWindow(window) => {
-                            window.update(message, &mut self.state)
-                        }
-                        _ => Task::none(),
-                    }
-                } else {
-                    Task::none()
-                }
+                self.handle_settings_window_message(id, message)
             }
-        }
+        };
+
+        let pending = std::mem::take(&mut self.state.pending_messages);
+        pending
+            .into_iter()
+            .fold(task, |acc, msg| acc.chain(Task::done(msg)))
     }
     pub fn theme(&self, window: window::Id) -> Option<iced::Theme> {
         if let Some(window) = self.windows.get(&window) {
-            match window {
-                WindowHandle::MainWindow(window) => Some(window.theme()),
-                WindowHandle::SettingsWindow(window) => Some(window.theme()),
-            }
+            Some(window.theme())
         } else {
             None
         }
     }
     pub fn title(&self, window: window::Id) -> String {
         if let Some(window) = self.windows.get(&window) {
-            match window {
-                WindowHandle::MainWindow(window) => window.title(),
-                WindowHandle::SettingsWindow(window) => window.title(),
-            }
+            window.title()
         } else {
             String::new()
         }
     }
     pub fn view(&self, window: window::Id) -> iced::Element<'_, Message> {
-        if let Some(window) = self.windows.get(&window) {
-            match window {
-                WindowHandle::MainWindow(window) => window
-                    .view()
-                    .map(|message| Message::MainWindowMessage(window.id, message)),
-                WindowHandle::SettingsWindow(window) => window
-                    .view()
-                    .map(|message| Message::SettingsWindowMessage(window.id, message)),
-            }
-        } else {
-            iced::widget::column![].into()
-        }
+        self.windows
+            .get(&window)
+            .map(|w| w.view_and_wrap(window))
+            .unwrap_or_else(|| iced::widget::column![].into())
     }
     pub fn subscription(&self) -> iced::Subscription<Message> {
         window::close_requests().map(Message::CloseRequestWindow)
     }
+}
+
+crate::define_window_dispatch! {
+    MainWindow => MainWindowMessage(crate::MainWindowMessage) as handle_main_window_message,
+    SettingsWindow => SettingsWindowMessage(crate::SettingsWindowMessage) as handle_settings_window_message,
 }
