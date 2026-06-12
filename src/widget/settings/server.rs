@@ -72,24 +72,27 @@ impl crate::Widget for ServerSettings {
         }
     }
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        let host = iced::widget::row![
-            iced::widget::text!("Server Host"),
+        let host = iced::widget::column![
+            iced::widget::text!("Host"),
             iced::widget::text_input("Please enter the server host", self.config.host.as_str())
                 .on_input(Message::HostChanged)
-        ];
-        let port = iced::widget::row![
-            iced::widget::text!("Server Port"),
+        ]
+        .width(iced::Length::Fixed(100.0));
+        let port = iced::widget::column![
+            iced::widget::text!("Port"),
             iced_aw::number_input(&self.config.port, 1..65535, Message::PortChanged).step(1)
-        ];
-        let ssl = iced::widget::row![
-            iced::widget::text!("Server SSL"),
+        ]
+        .width(iced::Length::Fixed(100.0));
+        let ssl = iced::widget::column![
+            iced::widget::text!("SSL"),
             iced::widget::checkbox(self.config.is_ssl).on_toggle(Message::SSLChanged)
-        ];
-        let check = iced::widget::row![
-            iced::widget::text!("Server Check"),
+        ]
+        .width(iced::Length::Fixed(50.0));
+        let config = iced::widget::row![host, port, ssl].spacing(10);
+        let check = iced::widget::column![
             iced::widget::button("Check").on_press(Message::Check),
             iced::widget::text(self.message.as_str()),
         ];
-        iced::widget::column![host, port, ssl, check].into()
+        iced::widget::center_x(iced::widget::column![config, check]).into()
     }
 }
