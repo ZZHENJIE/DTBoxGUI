@@ -2,6 +2,7 @@ use dtboxgui::Application;
 
 fn app_settings() -> iced::Settings {
     iced::Settings {
+        id: Some("zzhenjie.detbox_gui".to_string()),
         vsync: false,
         ..Default::default()
     }

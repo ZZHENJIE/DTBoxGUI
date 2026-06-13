@@ -19,21 +19,12 @@ pub mod infra {
     pub mod token_store;
 }
 
-pub mod window {
-    pub mod main;
-    pub mod settings;
-}
-
 pub mod view;
-
 pub mod widget;
+pub mod window;
 
 pub use {
-    app::application::Application, app::message::Message, app::state::State, app::widget::Widget,
-    app::window::Window, domain::api::APIResponse, domain::config::Config,
-    domain::server::ServerConfig, infra::token_store::TokenStore,
-};
-pub use {
-    window::main::MainWindow, window::main::Message as MainWindowMessage,
-    window::settings::Message as SettingsWindowMessage, window::settings::SettingsWindow,
+    app::application::Application, app::message::Message, app::state::State,
+    app::widget::SidebarTab, app::widget::Widget, app::window::Window, domain::api::APIResponse,
+    domain::config::Config, domain::server::ServerConfig, infra::token_store::TokenStore,
 };

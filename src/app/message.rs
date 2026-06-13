@@ -6,6 +6,6 @@ pub enum Message {
     OpenSettingsWindow,
     CloseRequestWindow(iced::window::Id),
     CloseWindow(iced::window::Id),
-    MainWindowMessage(iced::window::Id, crate::MainWindowMessage),
-    SettingsWindowMessage(iced::window::Id, crate::SettingsWindowMessage),
+    MainWindowMessage(iced::window::Id, crate::window::MainWindowMessage),
+    SettingsWindowMessage(iced::window::Id, crate::window::SettingsWindowMessage),
 }

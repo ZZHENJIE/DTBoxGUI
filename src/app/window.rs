@@ -1,6 +1,6 @@
 pub enum WindowHandle {
-    MainWindow(crate::MainWindow),
-    SettingsWindow(crate::SettingsWindow),
+    MainWindow(crate::window::MainWindow),
+    SettingsWindow(crate::window::SettingsWindow),
 }
 
 impl WindowHandle {

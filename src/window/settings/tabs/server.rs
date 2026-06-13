@@ -8,12 +8,12 @@ pub enum Message {
     CheckDone(crate::APIResponse<core_domain::result::HealthResult>),
 }
 
-pub struct ServerSettings {
+pub struct Server {
     pub config: crate::ServerConfig,
     pub message: String,
 }
 
-impl ServerSettings {
+impl Server {
     pub fn new() -> Self {
         Self {
             config: crate::ServerConfig::default(),
@@ -37,7 +37,7 @@ impl ServerSettings {
     }
 }
 
-impl crate::Widget for ServerSettings {
+impl crate::Widget for Server {
     type Message = Message;
     fn update(
         &mut self,
@@ -93,6 +93,12 @@ impl crate::Widget for ServerSettings {
             iced::widget::button("Check").on_press(Message::Check),
             iced::widget::text(self.message.as_str()),
         ];
-        iced::widget::center_x(iced::widget::column![config, check]).into()
+        iced::widget::column![config, check].into()
+    }
+}
+
+impl crate::SidebarTab for Server {
+    fn tab_label(&self) -> iced_aw::sidebar::TabLabel {
+        iced_aw::sidebar::TabLabel::Text("Server".to_string())
     }
 }

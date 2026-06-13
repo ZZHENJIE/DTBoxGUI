@@ -7,7 +7,6 @@ pub enum Message {
     ChangePage,
     Confirm,
     OpenSettingsWindow,
-    ServerSettings(crate::widget::ServerSettingsMessage),
 }
 
 pub struct StartPage {
@@ -15,7 +14,6 @@ pub struct StartPage {
     pub user_name: String,
     pub password: String,
     pub is_login_page: bool,
-    pub server_settings: crate::widget::ServerSettings,
 }
 
 impl crate::Widget for StartPage {
@@ -43,10 +41,6 @@ impl crate::Widget for StartPage {
                 self.user_login_state = true;
                 iced::Task::none()
             }
-            Message::ServerSettings(msg) => self
-                .server_settings
-                .update(msg, state)
-                .map(Message::ServerSettings),
             Message::OpenSettingsWindow => {
                 state.emit(crate::Message::OpenSettingsWindow);
                 iced::Task::none()
@@ -54,28 +48,33 @@ impl crate::Widget for StartPage {
         }
     }
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        let user_name = iced::widget::row![
+        let user_name = iced::widget::column![
             iced::widget::text!("UserName"),
             iced::widget::text_input("Please enter your username", self.user_name.as_str())
                 .on_input(Message::UserNameChanged)
-        ];
-        let password = iced::widget::row![
+        ]
+        .width(iced::Length::Fixed(400.0));
+        let password = iced::widget::column![
             iced::widget::text!("Password"),
             iced::widget::text_input("Please enter your password", self.password.as_str())
                 .on_input(Message::PasswordChanged)
-        ];
+        ]
+        .width(iced::Length::Fixed(400.0));
+
         let user_button = iced::widget::row![
             iced::widget::button(self.is_login_page_str()).on_press(Message::ChangePage),
             iced::widget::button("Confirm").on_press(Message::Confirm)
         ];
 
-        iced::widget::column![
-            user_name,
-            password,
-            user_button,
-            self.server_settings.view().map(Message::ServerSettings),
-            iced::widget::button("Open Settings Window").on_press(Message::OpenSettingsWindow)
-        ]
+        iced::widget::center_x(
+            iced::widget::column![
+                user_name,
+                password,
+                user_button,
+                iced::widget::button("Open Settings Window").on_press(Message::OpenSettingsWindow)
+            ]
+            .spacing(10),
+        )
         .into()
     }
 }
@@ -87,7 +86,6 @@ impl StartPage {
             user_name: String::new(),
             password: String::new(),
             is_login_page: true,
-            server_settings: crate::widget::ServerSettings::new(),
         }
     }
     pub fn check_login_state(&self) -> Task<Message> {

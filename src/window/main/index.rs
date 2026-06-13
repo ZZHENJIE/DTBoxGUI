@@ -48,11 +48,12 @@ impl crate::Widget for MainWindow {
         }
     }
     fn view(&self) -> iced::Element<'_, Self::Message> {
-        iced::widget::center(if self.start_page.user_login_state {
+        iced::widget::container(if self.start_page.user_login_state {
             iced::widget::column![].into()
         } else {
             self.start_page.view().map(Message::StartPage)
         })
+        .padding(10)
         .into()
     }
 }

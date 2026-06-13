@@ -1,4 +1,6 @@
-use crate::{MainWindow, Message, SettingsWindow, Widget, Window, app::window::WindowHandle};
+use crate::{
+    Message, Widget, Window, app::window::WindowHandle, window::MainWindow, window::SettingsWindow,
+};
 use iced::{Task, window};
 use std::collections::BTreeMap;
 
@@ -40,7 +42,7 @@ impl Application {
                     .insert(id, WindowHandle::MainWindow(MainWindow::new(id)));
                 Task::done(Message::MainWindowMessage(
                     id,
-                    crate::MainWindowMessage::Open,
+                    crate::window::MainWindowMessage::Open,
                 ))
             }
             Message::OpenSettingsWindow => {
@@ -49,7 +51,7 @@ impl Application {
                     .windows
                     .insert(id, WindowHandle::SettingsWindow(SettingsWindow::new(id)));
                 open.map(|id| {
-                    Message::SettingsWindowMessage(id, crate::SettingsWindowMessage::Open)
+                    Message::SettingsWindowMessage(id, crate::window::SettingsWindowMessage::Open)
                 })
             }
             Message::CloseRequestWindow(id) => self.handle_close_request_window(id),
@@ -99,6 +101,6 @@ impl Application {
 }
 
 crate::define_window_dispatch! {
-    MainWindow => MainWindowMessage(crate::MainWindowMessage) as handle_main_window_message,
-    SettingsWindow => SettingsWindowMessage(crate::SettingsWindowMessage) as handle_settings_window_message,
+    MainWindow => MainWindowMessage(crate::window::MainWindowMessage) as handle_main_window_message,
+    SettingsWindow => SettingsWindowMessage(crate::window::SettingsWindowMessage) as handle_settings_window_message,
 }

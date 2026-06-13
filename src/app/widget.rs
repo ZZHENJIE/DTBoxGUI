@@ -10,3 +10,7 @@ pub trait Widget {
     ) -> iced::Task<Self::Message>;
     fn view(&self) -> iced::Element<'_, Self::Message>;
 }
+
+pub trait SidebarTab: crate::Widget {
+    fn tab_label(&self) -> iced_aw::sidebar::TabLabel;
+}
